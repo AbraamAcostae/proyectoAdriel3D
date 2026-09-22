@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Liceo Fermín Tanguis — Visión sostenible 3D</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#081713;color:#ecf5ee}canvas{display:block}#ui{position:fixed;inset:0;pointer-events:none;padding:22px;display:flex;justify-content:space-between;align-items:flex-start}.panel{max-width:340px;background:#0c211bd9;border:1px solid #6ca57a65;border-radius:16px;padding:17px;backdrop-filter:blur(10px);box-shadow:0 12px 35px #00160a80}.eyebrow{font-size:11px;letter-spacing:.16em;color:#a9d9a8;font-weight:800}.title{font-size:20px;margin:7px 0 4px;font-weight:800}.copy{font-size:13px;line-height:1.5;color:#d2e7d2;margin:0}.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px;font-size:12px;color:#d9edda}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.controls{position:fixed;right:22px;bottom:22px;display:flex;gap:8px;pointer-events:auto}.controls button{border:1px solid #8dc49788;background:#143c2bcc;color:#effff0;padding:10px 12px;border-radius:10px;font:600 12px Inter,system-ui;cursor:pointer}.controls button:hover{background:#27613d}.note{position:fixed;left:22px;bottom:22px;color:#d9eddaaa;font-size:12px;max-width:340px;line-height:1.4}.zone-label{padding:6px 9px;border:1px solid #d7efce88;border-radius:999px;background:#123a2dcc;color:#f1ffe9;font:700 11px Inter,system-ui;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 14px #00160a55}@media(max-width:650px){#ui{padding:13px}.panel{max-width:290px;padding:13px}.note{left:13px;bottom:13px;max-width:225px}.controls{right:13px;bottom:13px}.title{font-size:17px}}@media(max-height:500px){.panel{max-width:300px;padding:11px}.panel .copy,.panel .legend,.note{display:none}.controls{right:12px;bottom:12px}}
+  </style>
+</head>
+<body>
+  <div id="ui"><section class="panel"><div class="eyebrow">PROPUESTA 2035 · SJL</div><div class="title">Fermín Tangüis, campus vivo</div><p class="copy">Visión conceptual del colegio existente convertido en un campus sostenible: aulas ventiladas, energía solar, patio activo y aprendizaje al aire libre.</p><div class="legend"><span><i class="dot" style="background:#3ea968"></i>Fachada viva</span><span><i class="dot" style="background:#6eb5d4"></i>Aulas ventiladas</span><span><i class="dot" style="background:#4e80c8"></i>Energía solar</span><span><i class="dot" style="background:#c29a43"></i>Huerto escolar</span></div></section></div>
+  <div class="note">Arrastra para recorrer el colegio · rueda para acercar · selecciona los botones para cambiar la vista.</div>
+  <div class="controls"><button id="front">Vista exterior</button><button id="court">Patio central</button><button id="garden">Huerto trasero</button><button id="reset">Recorrido libre</button></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
