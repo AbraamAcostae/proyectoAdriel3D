@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { box, addCollider } from '../utils.js';
+import { box, addCollider, instancedBoxes } from '../utils.js';
 import { concrete, greenGlass, glass, leafMat, dark } from '../materials.js';
 
 export function createFrontFacade(scene, colliders) {
@@ -13,17 +13,66 @@ export function createFrontFacade(scene, colliders) {
   // Roof
   scene.add(box(56, 0.5, 6, concrete, 0, 16.25, 20));
   
-  // Floors and internal classroom walls facing the courtyard (back)
-  for (let y = 0; y <= 12; y += 4) {
+  // Administrative Floors and internal offices facing the courtyard (back)
+  const deskMat = new THREE.MeshStandardMaterial({ color: 0x9a6b42, roughness: 0.5 });
+  const chairMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 });
+  const metalMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.25 });
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.3 });
+
+  // Courtyard Top Banner: "★ PABELLÓN ADMINISTRATIVO Y DIRECCIÓN GENERAL ★"
+  const adminCanvas = document.createElement('canvas');
+  adminCanvas.width = 1024; adminCanvas.height = 160;
+  const aCtx = adminCanvas.getContext('2d');
+  aCtx.fillStyle = '#0f2942'; aCtx.fillRect(0, 0, 1024, 160);
+  aCtx.strokeStyle = '#38bdf8'; aCtx.lineWidth = 10; aCtx.strokeRect(8, 8, 1008, 144);
+  aCtx.fillStyle = '#ffffff'; aCtx.font = 'bold 50px Arial'; aCtx.textAlign = 'center';
+  aCtx.fillText('★ PABELLÓN ADMINISTRATIVO Y DIRECCIÓN ★', 512, 70);
+  aCtx.fillStyle = '#38bdf8'; aCtx.font = 'bold 26px Arial';
+  aCtx.fillText('DIRECCIÓN GENERAL · SECRETARÍA · SALA DE PROFESORES · PSICOLOGÍA', 512, 122);
+  const adminTex = new THREE.CanvasTexture(adminCanvas);
+  const adminBanner = new THREE.Mesh(new THREE.PlaneGeometry(16.0, 2.5), new THREE.MeshBasicMaterial({ map: adminTex, side: THREE.DoubleSide }));
+  adminBanner.position.set(0, 17.5, 16.9);
+  adminBanner.rotation.y = Math.PI;
+  scene.add(adminBanner);
+
+  const officeNames = [
+    ['TÓPICO MÉDICO', 'SECRETARÍA', 'RECEPCIÓN', 'MESA DE PARTES', 'CAJA'],
+    ['SUBDIRECCIÓN', 'DIRECCIÓN GENERAL', 'SALA DE REUNIONES', 'ASESORÍA', 'COORDINACIÓN'],
+    ['SALA DE PROFESORES', 'SALA DE PROFESORES', 'SALA MULTIUSOS', 'COORDINACIÓN', 'ARCHIVOS'],
+    ['PSICOLOGÍA', 'TUTORÍA', 'ORIENTACIÓN', 'DEPTO. INGLÉS', 'SALA TÉCNICA']
+  ];
+
+  for (let f = 0; f < 4; f++) {
+    const y = f * 4;
     // Floor slab
     scene.add(box(55.5, 0.4, 6, concrete, 0, y + 0.2, 20));
-    // Back glass wall (classrooms facing courtyard at z=17.1)
-    if (y < 12) {
-      scene.add(box(55.5, 3.6, 0.1, glass, 0, y + 2.2, 17.1));
-      // Internal separating walls (classrooms)
-      for (let x = -20; x <= 20; x += 10) {
-        scene.add(box(0.2, 3.6, 5.8, concrete, x, y + 2.2, 20.05));
-      }
+
+    // Balcony railing along courtyard (z = 16.9)
+    scene.add(box(55.5, 0.95, 0.08, metalMat, 0, y + 0.65, 16.9));
+    scene.add(box(55.5, 0.06, 0.12, concrete, 0, y + 1.15, 16.9));
+
+    // Windows and glass corridor facing courtyard
+    scene.add(box(55.5, 2.4, 0.06, glass, 0, y + 2.4, 17.2));
+    // Window frames and horizontal bands
+    scene.add(box(55.5, 0.08, 0.12, frameMat, 0, y + 1.2, 17.2));
+    scene.add(box(55.5, 0.08, 0.12, frameMat, 0, y + 3.6, 17.2));
+
+    // Internal offices and partition walls
+    for (let x = -20; x <= 20; x += 10) {
+      scene.add(box(0.2, 3.6, 5.8, concrete, x, y + 2.2, 20.05));
+      scene.add(box(0.1, 2.4, 0.1, frameMat, x, y + 2.4, 17.2)); // Vertical mullion
+    }
+
+    // Office furniture inside each room
+    for (let rx = -25; rx <= 25; rx += 10) {
+      // Executive office desk
+      scene.add(box(1.8, 0.75, 0.9, deskMat, rx, y + 0.4, 20));
+      // Computer monitor
+      scene.add(box(0.5, 0.35, 0.06, chairMat, rx, y + 0.95, 20.1));
+      // Swivel chair
+      scene.add(box(0.5, 0.6, 0.5, chairMat, rx, y + 0.5, 19.2));
+      // Bookshelf / Filing cabinet on back wall
+      scene.add(box(1.6, 2.0, 0.4, deskMat, rx, y + 1.2, 22.6));
     }
   }
   
@@ -104,6 +153,19 @@ export function createFrontFacade(scene, colliders) {
   signMesh.position.set(0, 16.5, 24.9);
   scene.add(signMesh);
 
+  // School logo below the name sign — loaded from public/logofermin.png
+  const logoLoader = new THREE.TextureLoader();
+  logoLoader.load('/logofermin.png', (logoTex) => {
+    logoTex.colorSpace = THREE.SRGBColorSpace;
+    // Square logo, displayed as a shield centered on the facade
+    const logoMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(4.8, 4.8),
+      new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, alphaTest: 0.05 })
+    );
+    logoMesh.position.set(0, 12.8, 24.92);
+    scene.add(logoMesh);
+  });
+
   // Vertical Gardens (Modern eco-touch)
   const createVerticalGarden = (x) => {
     scene.add(box(3.6, 15.6, 0.5, gridMaterial, x, 8, 23.4));
@@ -143,24 +205,23 @@ export function createFrontFacade(scene, colliders) {
   scene.add(box(3.5, 0.1, 0.1, fenceMaterial, -2, 2.5, fenceZ));
   scene.add(box(3.5, 0.1, 0.1, fenceMaterial, 2, 2.5, fenceZ));
 
-  // Rest of the fence (rejas)
+  const frontPillars = [];
+  const frontBars = [];
   const createFenceSection = (startX, endX) => {
-    // Pillars every 4 units
     for (let x = startX; x <= endX; x += 4) {
-      scene.add(box(0.6, 2.5, 0.6, fencePillarMat, x, 1.25, fenceZ));
+      frontPillars.push({ x, y: 1.25, z: fenceZ });
     }
-    // Horizontal rails
-    scene.add(box(endX - startX, 0.1, 0.1, fenceMaterial, (startX + endX)/2, 0.5, fenceZ));
-    scene.add(box(endX - startX, 0.1, 0.1, fenceMaterial, (startX + endX)/2, 2.2, fenceZ));
-    // Vertical bars
+    scene.add(box(endX - startX, 0.1, 0.1, fenceMaterial, (startX + endX) / 2, 0.5, fenceZ));
+    scene.add(box(endX - startX, 0.1, 0.1, fenceMaterial, (startX + endX) / 2, 2.2, fenceZ));
     for (let x = startX + 0.3; x < endX; x += 0.3) {
-      // Don't add a bar if it's inside a pillar
       if (Math.abs((x - startX) % 4) > 0.4 && Math.abs((x - startX) % 4) < 3.6) {
-        scene.add(box(0.05, 2.4, 0.05, fenceMaterial, x, 1.2, fenceZ));
+        frontBars.push({ x, y: 1.2, z: fenceZ });
       }
     }
   };
 
   createFenceSection(-28, -4.5);
   createFenceSection(4.5, 28);
+  instancedBoxes(scene, fencePillarMat, 0.6, 2.5, 0.6, frontPillars);
+  instancedBoxes(scene, fenceMaterial, 0.05, 2.4, 0.05, frontBars);
 }
